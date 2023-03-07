@@ -109,6 +109,7 @@ public class InstanceResource {
             @QueryParam("status") String status,
             @QueryParam("lastDirtyTimestamp") String lastDirtyTimestamp) {
         boolean isFromReplicaNode = "true".equals(isReplication);
+        // 调用PeerAwareInstanceRegistry的renew()处理续约请求
         boolean isSuccess = registry.renew(app.getName(), id, isFromReplicaNode);
 
         // Not found in the registry, immediately ask for a register
@@ -278,6 +279,7 @@ public class InstanceResource {
     public Response cancelLease(
             @HeaderParam(PeerEurekaNode.HEADER_REPLICATION) String isReplication) {
         try {
+            // PeerAwareInstanceRegistry.cancel()
             boolean isSuccess = registry.cancel(app.getName(), id,
                 "true".equals(isReplication));
 

@@ -30,6 +30,7 @@ public final class Archaius1Utils {
 
         String eurekaPropsFile = EUREKA_PROPS_FILE.get();
         try {
+            // 读取eureka-client.properties配置，将eureka client相关的配置存入Map中，交给ConfigurationManager管理
             ConfigurationManager.loadCascadedPropertiesFromResources(eurekaPropsFile);
         } catch (IOException e) {
             logger.warn(

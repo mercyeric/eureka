@@ -183,10 +183,12 @@ class TaskExecutors<ID, T> {
         public void run() {
             try {
                 while (!isShutdown.get()) {
+                    // 获取任务列表
                     List<TaskHolder<ID, T>> holders = getWork();
                     metrics.registerExpiryTimes(holders);
 
                     List<T> tasks = getTasksOf(holders);
+                    // 将批量Task交给ReplicationTaskProcessor执行
                     ProcessingResult result = processor.process(tasks);
                     switch (result) {
                         case Success:

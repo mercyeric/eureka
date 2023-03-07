@@ -20,8 +20,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Date;
 
 import com.netflix.appinfo.ApplicationInfoManager;
@@ -46,15 +48,21 @@ public class ExampleEurekaClient {
     private static ApplicationInfoManager applicationInfoManager;
     private static EurekaClient eurekaClient;
 
+    // 基于eureka实例配置初始化ApplicationInfoManager
     private static synchronized ApplicationInfoManager initializeApplicationInfoManager(EurekaInstanceConfig instanceConfig) {
         if (applicationInfoManager == null) {
+            // 基于eureka实例配置获取服务实例信息
             InstanceInfo instanceInfo = new EurekaConfigBasedInstanceInfoProvider(instanceConfig).get();
+            // 基于eureka实例配置和服务实例信息构建ApplicationInfoManager
             applicationInfoManager = new ApplicationInfoManager(instanceConfig, instanceInfo);
         }
 
         return applicationInfoManager;
     }
 
+    /*
+    * 初始化Eureka Client：使用DiscoveryClient，基于ApplicationInfoManager和EurekaClientConfig，构建EurekaClient
+     */
     private static synchronized EurekaClient initializeEurekaClient(ApplicationInfoManager applicationInfoManager, EurekaClientConfig clientConfig) {
         if (eurekaClient == null) {
             eurekaClient = new DiscoveryClient(applicationInfoManager, clientConfig);
@@ -114,16 +122,44 @@ public class ExampleEurekaClient {
         }
     }
 
-    public static void main(String[] args) {
+    /**
+     * This will be read by server internal discovery client. We need to salience it.
+     */
+    private static void injectEurekaConfiguration() throws UnknownHostException {
+        String myHostName = InetAddress.getLocalHost().getHostName();
+        String myServiceUrl = "http://" + myHostName + ":8080/v2/";
+
+        System.setProperty("eureka.region", "default");
+        System.setProperty("eureka.name", "eureka");
+        System.setProperty("eureka.vipAddress", "eureka.mydomain.net");
+        System.setProperty("eureka.port", "8080");
+        System.setProperty("eureka.preferSameZone", "false");
+        System.setProperty("eureka.shouldUseDns", "false");
+//        System.setProperty("eureka.shouldFetchRegistry", "false");
+        System.setProperty("eureka.shouldFetchRegistry", "true");
+        System.setProperty("eureka.serviceUrl.defaultZone", myServiceUrl);
+        System.setProperty("eureka.serviceUrl.default.defaultZone", myServiceUrl);
+        System.setProperty("eureka.awsAccessId", "fake_aws_access_id");
+        System.setProperty("eureka.awsSecretKey", "fake_aws_secret_key");
+        System.setProperty("eureka.numberRegistrySyncRetries", "0");
+    }
+
+    public static void main(String[] args) throws UnknownHostException {
+        injectEurekaConfiguration();
+
         ExampleEurekaClient sampleClient = new ExampleEurekaClient();
 
         // create the client
+        // new MyDataCenterInstanceConfig()：读取eureka-client.properties配置文件，获取eureka实例相关配置
+        // 基于eureka实例配置和服务实例信息，初始化ApplicationInfoManager
         ApplicationInfoManager applicationInfoManager = initializeApplicationInfoManager(new MyDataCenterInstanceConfig());
+
+        // 读取eureka-client.properties配置文件，获取eureka client相关配置
+        // 基于ApplicationInfoManager的信息和EurekaClientConfig，构建EurekaClient
         EurekaClient client = initializeEurekaClient(applicationInfoManager, new DefaultEurekaClientConfig());
 
         // use the client
         sampleClient.sendRequestToServiceUsingEureka(client);
-
 
         // shutdown the client
         eurekaClient.shutdown();

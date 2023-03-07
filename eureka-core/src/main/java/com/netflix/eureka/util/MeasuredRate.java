@@ -47,6 +47,8 @@ public class MeasuredRate {
     }
 
     public synchronized void start() {
+        // sampleInterval：默认1分钟
+        // 每隔一分钟执行一次——>将currentBucket设置给上一分钟的计数lastBucket，并将currentBucket清零。
         if (!isActive) {
             timer.schedule(new TimerTask() {
 

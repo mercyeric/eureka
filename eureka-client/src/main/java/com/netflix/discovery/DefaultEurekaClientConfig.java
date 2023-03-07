@@ -80,8 +80,9 @@ public class DefaultEurekaClientConfig implements EurekaClientConfig {
         this.namespace = namespace.endsWith(".")
                 ? namespace
                 : namespace + ".";
-
+        // 读取eureka client相关配置
         this.configInstance = Archaius1Utils.initConfig(CommonConstants.CONFIG_FILE_NAME);
+        // 服务间通信相关的配置
         this.transportConfig = new DefaultEurekaTransportConfig(namespace, configInstance);
     }
 

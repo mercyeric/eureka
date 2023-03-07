@@ -79,6 +79,7 @@ public class PeerReplicationResource {
     @POST
     public Response batchReplication(ReplicationList replicationList) {
         try {
+            // 接收到批量请求后，根据请求进行分发
             ReplicationListResponse batchResponse = new ReplicationListResponse();
             for (ReplicationInstance instanceInfo : replicationList.getReplicationList()) {
                 try {
@@ -97,6 +98,7 @@ public class PeerReplicationResource {
     }
 
     private ReplicationInstanceResponse dispatch(ReplicationInstance instanceInfo) {
+        // 封装请求信息，根据请求的Action，调用不同的接口方法处理请求
         ApplicationResource applicationResource = createApplicationResource(instanceInfo);
         InstanceResource resource = createInstanceResource(instanceInfo, applicationResource);
 

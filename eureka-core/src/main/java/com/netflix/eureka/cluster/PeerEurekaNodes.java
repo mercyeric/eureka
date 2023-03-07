@@ -73,6 +73,7 @@ public class PeerEurekaNodes {
     }
 
     public void start() {
+        // 单线程的定时调度器，执行集群节点信息更新任务，默认10分钟
         taskExecutor = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactory() {
                     @Override
@@ -84,11 +85,14 @@ public class PeerEurekaNodes {
                 }
         );
         try {
+            // 更新集群节点信息
+            // 处理集群url，返回除自身外集群中其他eureka server节点的url集合
             updatePeerEurekaNodes(resolvePeerUrls());
             Runnable peersUpdateTask = new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        // 定时更新集群节点信息
                         updatePeerEurekaNodes(resolvePeerUrls());
                     } catch (Throwable e) {
                         logger.error("Cannot update the replica Nodes", e);
@@ -96,6 +100,7 @@ public class PeerEurekaNodes {
 
                 }
             };
+            // 每隔peerEurekaNodesUpdateIntervalMs（默认10分钟）执行定时刷新集群信息的任务
             taskExecutor.scheduleWithFixedDelay(
                     peersUpdateTask,
                     serverConfig.getPeerEurekaNodesUpdateIntervalMs(),

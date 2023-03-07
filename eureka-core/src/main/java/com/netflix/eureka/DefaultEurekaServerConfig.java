@@ -109,8 +109,7 @@ public class DefaultEurekaServerConfig implements EurekaServerConfig {
 
         String eurekaPropsFile = EUREKA_PROPS_FILE.get();
         try {
-            // ConfigurationManager
-            // .loadPropertiesFromResources(eurekaPropsFile);
+            // 从eureka-server.properties文件加载配置到Properties对象，将配置的key-value存入Map，交给ConfigurationManager管理
             ConfigurationManager
                     .loadCascadedPropertiesFromResources(eurekaPropsFile);
         } catch (IOException e) {

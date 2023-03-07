@@ -194,7 +194,9 @@ class AcceptorExecutor<ID, T> {
                     if (scheduleTime < now) {
                         scheduleTime = now + trafficShaper.transmissionDelay();
                     }
+                    // 每500毫秒
                     if (scheduleTime <= now) {
+                        // 将任务拆分batch
                         assignBatchWork();
                         assignSingleItemWork();
                     }
@@ -262,6 +264,7 @@ class AcceptorExecutor<ID, T> {
         }
 
         private void appendTaskHolder(TaskHolder<ID, T> taskHolder) {
+            // 判断pendingTasks是否满了，即size是否超过maxBufferSize（默认250）
             if (isFull()) {
                 pendingTasks.remove(processingOrder.poll());
                 queueOverflows++;
